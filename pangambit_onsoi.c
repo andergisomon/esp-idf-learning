@@ -17,6 +17,10 @@
 #define KOTOS_2        3 // GPIO3, D1 id dulak
 #define KOTOS_3        4 // GPIO4, D2 id dulak
 
+#define BIRI_1         5 // GPIO5, D3 id dulak
+#define BIRI_2         6 // GPIO6, D4 id dulak
+#define BIRI_3         7 // GPIO7, D5 id dulak
+
 typedef struct gamit {
     int buttonstate1;
     int buttonstate2;
@@ -65,67 +69,21 @@ void Koromitan(const uint8_t *pagatadan, const uint8_t *poiloon_mikot, int ninar
     printf("\nButton 2: %d", dolinon.buttonstate2);
     printf("\nButton 3: %d", dolinon.buttonstate3);
     if (dolinon.buttonstate1 == 1) {
-        gpio_set_level(KOTOS_1, );
+        gpio_set_level(KOTOS_1, gpio_get_level(BIRI_1));
     }
     
     if (dolinon.buttonstate2 == 1) {
-        gpio_set_level(KOTOS_2, 1);
+        gpio_set_level(KOTOS_2, gpio_get_level(BIRI_2));
     }
 
     if (dolinon.buttonstate3 == 1) {
-        gpio_set_level(KOTOS_3, 1);
+        gpio_set_level(KOTOS_3, gpio_get_level(BIRI_3));
     }
 
 }
 
-
-// static void pongombitan(void *arg) {
-//     esp_err_t sinuli  = ESP_OK;
-//     uint32_t intob = 0; 
-
-//  //   size_t ginayo = ESPNOW_DATA_LEN;
-//  //   uint8_t *poiloon  = ESP_CALLOC(1, ESPNOW_DATA_LEN);
-//     /*
-//     Poiloon diti kikawo do tintob dongopodon, nga' gatang dau mantad tintob dongopodon
-//     Haro tolu kotos ipopon, om koponutun do tolu tintob donduoon: XXX -> [Kotos 1] [Kotos 2] [Kotos 3]
-//     Gatang X: 0 -> Nopisok, 1 -> Napasi
-
-//     000 = Nangapatai
-//     001 = Kotos 1 napasi, Kotos 3 om 2 napatai
-//     010 = Kotos 2 napasi, Kotos 3 om 1 napatai
-//     011 = Kotos 3 napatai Kotos 2 om 1 napasi
-//     100 = Kotos 3 napasi, Kotos 2 om 1 napatai
-//     101 = Kotos 3 om 1 napasi, Kotos 2 napatai
-//     110 = Kotos 3 om 2 napasi, Kotos 1 napatai
-//     111 = Nangapasi
-//     */
-
-
-
-//   //  memcpy(poiloon, &dolinon.buttonstate1, sizeof(dolinon.buttonstate1));
-
-//     // printf("\n%i\n", sinuli);
-//     // ESP_ERROR_CONTINUE(sinuli != ESP_OK, "<%s> espnow_send", esp_err_to_name(sinuli));
-//     // ESP_LOGI(TAG, "esp_now_register_recv_cb mamanau, tintob: %" PRIu32 ", poiloon rinamit: %s", intob++, poiloon);
-//     // ESP_LOGI(TAG, "esp_now_register_recv_cb mamanau, tintob: %" PRIu32 ", poiloon rinamit: %s", intob++, dolinon.a);
-//     printf("\nFUCKER: %d", dolinon.buttonstate1);
-//     printf("\n");
-//    // memset(poiloon, 0, ESPNOW_DATA_LEN);
-
-
-//     ESP_LOGI(TAG, "Pongombitan nakalabus");
-//  //   ESP_FREE(poiloon);
-//     vTaskDelete(NULL);
-// }
-
-// static void ponimpuun_pangambit(void) {
-//     xTaskCreate(pongombitan, "Popotimpuun pangambit", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
-// }
-
-
 void app_main(void)
 {
-  //  uint8_t sinuli = ESP_OK;
     
     for (int i = 0; i < 1; i++) {
         ponimpuun_kotos();
@@ -133,13 +91,11 @@ void app_main(void)
 
     espnow_storage_init();
 
-  //  ponimpuun_pangambit();
     ponimpuun_wifi();
 
     espnow_config_t espnow_config = ESPNOW_INIT_CONFIG_DEFAULT();
     espnow_init(&espnow_config);
     ESP_ERROR_CHECK(esp_now_register_recv_cb(Koromitan));
     ESP_LOGI(TAG, "Receive callback registered");
-  //  esp_now_register_recv_cb(Koromitan);
-   // ESP_LOGI(TAG, "%s id pampos callback/lohoukaagu", esp_err_to_name(sinuli));
+
 }

@@ -1,0 +1,130 @@
+#include "esp_log.h"
+#include "esp_system.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
+
+#include "esp_wifi.h"
+#include "esp_mac.h"
+#include "espnow_utils.h"
+#include "espnow.h"
+#include "espnow_ctrl.h"
+#include "driver/gpio.h"
+#include "espnow_mem.h"
+// #include "build/config/sdkconfig.h" // Posuango popianai do intellisense nopo, pokinomio' pogulu mamaal
+
+#define KOTOS_1        2 // GPIO2, D0 id dulak
+#define KOTOS_2        3 // GPIO3, D1 id dulak
+#define KOTOS_3        4 // GPIO4, D2 id dulak
+
+uint8_t pagatadan[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+static const char *TAG = "sodusuhu";
+
+typedef struct gamit {
+    int buttonstate1;
+    int buttonstate2;
+    int buttonstate3;
+    int buttonstate4;
+    int buttonstate5;
+    int buttonstate6;
+
+} gamit;
+gamit dolinon; // Mamadalin do poiloon id pampos Poniasan
+
+
+static void ponimpuun_wifi()
+{
+    esp_event_loop_create_default();
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+    ESP_ERROR_CHECK(esp_wifi_start());
+}
+
+static void ponimpuun_pomiri(void)
+{
+    gpio_reset_pin(KOTOS_1);
+    gpio_reset_pin(KOTOS_2);
+    gpio_reset_pin(KOTOS_3);
+
+    /* Tolu GPIO hiti nopo nga' pinisok */
+    gpio_set_direction(KOTOS_1, GPIO_MODE_INPUT);
+    gpio_set_direction(KOTOS_2, GPIO_MODE_INPUT);
+    gpio_set_direction(KOTOS_3, GPIO_MODE_INPUT);
+}
+
+// This function is formerly uint8_t void
+static void pomiri(void) {
+    int gpio2 = gpio_get_level(KOTOS_1);
+    int gpio3 = gpio_get_level(KOTOS_2);
+    int gpio4 = gpio_get_level(KOTOS_3);
+
+    dolinon.buttonstate1 = gpio2;
+    dolinon.buttonstate2 = gpio3;
+    dolinon.buttonstate3 = gpio4;
+}
+
+static void poniasan(void *arg) {
+    esp_err_t sinuli  = ESP_OK;
+    // uint32_t intob = 0; 
+
+    // uint8_t *poiloon = ESP_CALLOC(1, ESPNOW_DATA_LEN);
+    /*
+    Poiloon diti kikawo do tintob dongopodon, nga' gatang dau mantad tintob dongopodon
+    Haro tolu kotos ipopon, om koponutun do tolu tintob donduoon: XXX -> [Kotos 1] [Kotos 2] [Kotos 3]
+    Gatang X: 0 -> Nopisok, 1 -> Napasi
+
+    000 = Nangapatai
+    001 = Kotos 1 napasi, Kotos 3 om 2 napatai
+    010 = Kotos 2 napasi, Kotos 3 om 1 napatai
+    011 = Kotos 3 napatai Kotos 2 om 1 napasi
+    100 = Kotos 3 napasi, Kotos 2 om 1 napatai
+    101 = Kotos 3 om 1 napasi, Kotos 2 napatai
+    110 = Kotos 3 om 2 napasi, Kotos 1 napatai
+    111 = Nangapasi
+    */
+
+    // espnow_frame_head_t frame_head = {
+    // .retransmit_count = CONFIG_RETRY_NUM,
+    // .broadcast        = true,
+    // };
+
+    while (1) {
+        pomiri();
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+  //      sinuli = espnow_send(ESPNOW_DATA_TYPE_DATA, ESPNOW_ADDR_BROADCAST, &dolinon, sizeof(dolinon), &frame_head, portMAX_DELAY);
+        esp_now_send(pagatadan, (uint8_t *) &dolinon, sizeof(dolinon));
+        printf("\n%i\n", sinuli);
+        printf("Switch 1: %d", dolinon.buttonstate1);
+        printf("Switch 2: %d", dolinon.buttonstate2);
+        printf("Switch 3: %d", dolinon.buttonstate3);
+
+    }
+
+
+    ESP_LOGI(TAG, "Poniasan nakalabus");
+    // ESP_FREE(poiloon);
+    vTaskDelete(NULL);
+}
+
+static void ponimpuun_ponias(void) {
+
+    xTaskCreate(poniasan, "Popotimpuun ponias", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+}
+
+
+void app_main(void)
+{
+    ponimpuun_pomiri();
+    espnow_storage_init();
+
+    ponimpuun_ponias();
+    ponimpuun_wifi();
+
+    espnow_config_t espnow_config = ESPNOW_INIT_CONFIG_DEFAULT();
+    espnow_init(&espnow_config);
+}

@@ -12,17 +12,18 @@
 #include "driver/gpio.h"
 #include "espnow_mem.h"
 
-#include <sys/time.h> // Montok hiza
+#include <sys/time.h> // Montok hiza / for time
 
 //#include "build/config/sdkconfig.h" // Posuango popianai do intellisense nopo, pokinomio' pogulu mamaal
+/* Only to silence intellisense nagging, comment before building */
 
-#define KOTOS_1        2 // GPIO2, D0 id dulak
-#define KOTOS_2        3 // GPIO3, D1 id dulak
-#define KOTOS_3        4 // GPIO4, D2 id dulak
+#define KOTOS_1        2 // GPIO2, D0 id dulak / on board
+#define KOTOS_2        3 // GPIO3, D1 id dulak / on board
+#define KOTOS_3        4 // GPIO4, D2 id dulak / on board
 
-#define BIRI_1         5 // GPIO5, D3 id dulak
-#define BIRI_2         6 // GPIO6, D4 id dulak
-#define BIRI_3         7 // GPIO7, D5 id dulak
+#define BIRI_1         5 // GPIO5, D3 id dulak / on board
+#define BIRI_2         6 // GPIO6, D4 id dulak / on board
+#define BIRI_3         7 // GPIO7, D5 id dulak / on board
 
 typedef struct gamit {
     int buttonstate1;
@@ -33,13 +34,13 @@ typedef struct gamit {
     int buttonstate6;
 
 } gamit;
-gamit dolinon; // Mamadalin do poiloon id pampos Koromitan
+gamit dolinon; // Mamadalin do poiloon id pampos Koromitan / For transferring data to Receiving function
 
 static const char *TAG = "sodusuhu";
 
 void set_time(void) {
     struct timeval now;
-    now.tv_sec = 1722541840; // Seconds since Unix epoch
+    now.tv_sec = 1722541840; // Seconds since Unix epoch / Kiop tantad tinontok Unix
     now.tv_usec = 0;
 
     settimeofday(&now, NULL);
@@ -51,8 +52,7 @@ char* get_time(void) {
     return asctime(tm);
 }
 
-
-static void ponimpuun_wifi()
+static void ponimpuun_wifi() // WiFi init
 {
     esp_event_loop_create_default();
 
@@ -71,11 +71,12 @@ static void ponimpuun_kotos(void)
     gpio_reset_pin(KOTOS_2);
     gpio_reset_pin(KOTOS_3);
 
-    /* Tolu GPIO hiti nopo nga' pinisok */
+    /* Tolu GPIO hiti nopo nga' pinisok / These three GPIOs are buttons */
     gpio_set_direction(KOTOS_1, GPIO_MODE_OUTPUT);
     gpio_set_direction(KOTOS_2, GPIO_MODE_OUTPUT);
     gpio_set_direction(KOTOS_3, GPIO_MODE_OUTPUT);
 
+    /* GPIO pomiri don tikid GPIO pinisok / Reader GPIOs for each GPIO buttons */
     gpio_set_direction(BIRI_1, GPIO_MODE_INPUT);
     gpio_set_direction(BIRI_2, GPIO_MODE_INPUT);
     gpio_set_direction(BIRI_3, GPIO_MODE_INPUT);
@@ -87,9 +88,6 @@ static void ponimpuun_kotos(void)
 
 void Koromitan(const uint8_t *pagatadan, const uint8_t *poiloon_mikot, int ninaru) {
     memcpy(&dolinon, poiloon_mikot, sizeof(dolinon));
-    // printf("\nButton 1: %d", dolinon.buttonstate1);
-    // printf("\nButton 2: %d", dolinon.buttonstate2);
-    // printf("\nButton 3: %d", dolinon.buttonstate3);
     if (dolinon.buttonstate1 == 1) {
         gpio_set_level(KOTOS_1, !gpio_get_level(BIRI_1));
         ESP_LOGI(TAG, "Button 1 signal received at: %s", get_time());
@@ -115,7 +113,6 @@ void app_main(void)
     }
 
     espnow_storage_init();
-
     ponimpuun_wifi();
 
     espnow_config_t espnow_config = ESPNOW_INIT_CONFIG_DEFAULT();

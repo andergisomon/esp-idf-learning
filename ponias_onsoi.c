@@ -92,15 +92,15 @@ static void poniasan(void *arg) {
 
     while (1) {
         pomiri();
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
         esp_now_send(pagatadan, (uint8_t *) &dolinon, sizeof(dolinon));
         printf("\n%i\n", sinuli);
         printf("Switch 1: %d", dolinon.buttonstate1);
         printf("Switch 2: %d", dolinon.buttonstate2);
         printf("Switch 3: %d", dolinon.buttonstate3);
+        prev1 = current1; prev2 = current2; prev3 = current3;
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
-
-    prev1 = current1; prev2 = current2; prev3 = current3;
 
     ESP_LOGI(TAG, "Poniasan nakalabus");
     vTaskDelete(NULL);

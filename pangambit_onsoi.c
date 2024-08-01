@@ -11,6 +11,9 @@
 #include "espnow_ctrl.h"
 #include "driver/gpio.h"
 #include "espnow_mem.h"
+
+#include <sys/time.h> // Montok hiza
+
 //#include "build/config/sdkconfig.h" // Posuango popianai do intellisense nopo, pokinomio' pogulu mamaal
 
 #define KOTOS_1        2 // GPIO2, D0 id dulak
@@ -33,6 +36,21 @@ typedef struct gamit {
 gamit dolinon; // Mamadalin do poiloon id pampos Koromitan
 
 static const char *TAG = "sodusuhu";
+
+void set_time(void) {
+    struct timeval now;
+    now.tv_sec = 1722541840; // Seconds since Unix epoch
+    now.tv_usec = 0;
+
+    settimeofday(&now, NULL);
+}
+
+char* get_time(void) {
+    time_t t = time(NULL);
+    struct tm *tm = localtime(&t);
+    return asctime(tm);
+}
+
 
 static void ponimpuun_wifi()
 {
@@ -69,28 +87,31 @@ static void ponimpuun_kotos(void)
 
 void Koromitan(const uint8_t *pagatadan, const uint8_t *poiloon_mikot, int ninaru) {
     memcpy(&dolinon, poiloon_mikot, sizeof(dolinon));
-    printf("\nButton 1: %d", dolinon.buttonstate1);
-    printf("\nButton 2: %d", dolinon.buttonstate2);
-    printf("\nButton 3: %d", dolinon.buttonstate3);
+    // printf("\nButton 1: %d", dolinon.buttonstate1);
+    // printf("\nButton 2: %d", dolinon.buttonstate2);
+    // printf("\nButton 3: %d", dolinon.buttonstate3);
     if (dolinon.buttonstate1 == 1) {
         gpio_set_level(KOTOS_1, !gpio_get_level(BIRI_1));
+        ESP_LOGI(TAG, "Button 1 signal received at: %s", get_time());
     }
     
     if (dolinon.buttonstate2 == 1) {
         gpio_set_level(KOTOS_2, !gpio_get_level(BIRI_2));
+        ESP_LOGI(TAG, "Button 2 signal received at: %s", get_time());
     }
 
     if (dolinon.buttonstate3 == 1) {
         gpio_set_level(KOTOS_3, !gpio_get_level(BIRI_3));
+        ESP_LOGI(TAG, "Button 3 signal received at: %s", get_time());
     }
 
 }
 
 void app_main(void)
 {
-    
     for (int i = 0; i < 1; i++) {
         ponimpuun_kotos();
+        set_time();
     }
 
     espnow_storage_init();
@@ -101,5 +122,4 @@ void app_main(void)
     espnow_init(&espnow_config);
     ESP_ERROR_CHECK(esp_now_register_recv_cb(Koromitan));
     ESP_LOGI(TAG, "Receive callback registered");
-
 }

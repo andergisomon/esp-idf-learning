@@ -12,6 +12,7 @@
 #include "driver/gpio.h"
 #include "espnow_mem.h"
 // #include "build/config/sdkconfig.h" // Posuango popianai do intellisense nopo, pokinomio' pogulu mamaal
+/* Include only to shut up intellisense nagging */
 
 #define KOTOS_1        2 // GPIO2, D0 id dulak
 #define KOTOS_2        3 // GPIO3, D1 id dulak
@@ -32,7 +33,7 @@ typedef struct gamit {
     int buttonstate6;
 
 } gamit;
-gamit dolinon; // Mamadalin do poiloon id pampos Poniasan
+gamit dolinon; // Mamadalin do poiloon id pampos Poniasan / For transfering data to transmitter function
 
 
 static void ponimpuun_wifi()
@@ -53,13 +54,13 @@ static void ponimpuun_pomiri(void)
     gpio_reset_pin(KOTOS_2);
     gpio_reset_pin(KOTOS_3);
 
-    /* Tolu GPIO hiti nopo nga' pinisok */
+    /* Tolu GPIO hiti nopo nga' pinisok / Three of these GPIO are buttons */
     gpio_set_direction(KOTOS_1, GPIO_MODE_INPUT);
     gpio_set_direction(KOTOS_2, GPIO_MODE_INPUT);
     gpio_set_direction(KOTOS_3, GPIO_MODE_INPUT);
 }
 
-// This function is formerly uint8_t void
+// Function for reading GPIO pipns
 static void pomiri(void) {
     current1 = gpio_get_level(KOTOS_1);
     current2 = gpio_get_level(KOTOS_2);
@@ -102,12 +103,12 @@ static void poniasan(void *arg) {
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
-    ESP_LOGI(TAG, "Poniasan nakalabus");
+    ESP_LOGI(TAG, "Poniasan nakalabus / Transmission exited");
     vTaskDelete(NULL);
 }
 
 static void ponimpuun_ponias(void) {
-    xTaskCreate(poniasan, "Popotimpuun ponias", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreate(poniasan, "Popotimpuun ponias / Initialize transmitter", 4 * 1024, NULL, tskIDLE_PRIORITY + 1, NULL);
 }
 
 

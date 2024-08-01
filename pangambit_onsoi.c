@@ -58,6 +58,10 @@ static void ponimpuun_kotos(void)
     gpio_set_direction(KOTOS_2, GPIO_MODE_OUTPUT);
     gpio_set_direction(KOTOS_3, GPIO_MODE_OUTPUT);
 
+    gpio_set_direction(BIRI_1, GPIO_MODE_INPUT);
+    gpio_set_direction(BIRI_2, GPIO_MODE_INPUT);
+    gpio_set_direction(BIRI_3, GPIO_MODE_INPUT);
+
     gpio_set_level(KOTOS_1, 0);
     gpio_set_level(KOTOS_2, 0);
     gpio_set_level(KOTOS_3, 0);
@@ -69,15 +73,15 @@ void Koromitan(const uint8_t *pagatadan, const uint8_t *poiloon_mikot, int ninar
     printf("\nButton 2: %d", dolinon.buttonstate2);
     printf("\nButton 3: %d", dolinon.buttonstate3);
     if (dolinon.buttonstate1 == 1) {
-        gpio_set_level(KOTOS_1, gpio_get_level(BIRI_1));
+        gpio_set_level(KOTOS_1, !gpio_get_level(BIRI_1));
     }
     
     if (dolinon.buttonstate2 == 1) {
-        gpio_set_level(KOTOS_2, gpio_get_level(BIRI_2));
+        gpio_set_level(KOTOS_2, !gpio_get_level(BIRI_2));
     }
 
     if (dolinon.buttonstate3 == 1) {
-        gpio_set_level(KOTOS_3, gpio_get_level(BIRI_3));
+        gpio_set_level(KOTOS_3, !gpio_get_level(BIRI_3));
     }
 
 }

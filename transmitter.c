@@ -14,14 +14,14 @@
 // #include "build/config/sdkconfig.h" // Posuango popianai do intellisense nopo, pokinomio' pogulu mamaal
 /* Include only to shut up intellisense nagging */
 
-#define KOTOS_1        2 // GPIO2, D0 id dulak
-#define KOTOS_2        3 // GPIO3, D1 id dulak
-#define KOTOS_3        4 // GPIO4, D2 id dulak
+#define KOTOS_1        2 // GPIO2, D0 id dulak / on the board
+#define KOTOS_2        3 // GPIO3, D1 id dulak / on the board
+#define KOTOS_3        4 // GPIO4, D2 id dulak / on the board
 
 int prev1 = 0; int prev2 = 0; int prev3 = 0;
 int current1 = 0; int current2 = 0; int current3 = 0;
 
-uint8_t pagatadan[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t pagatadan[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; // Broadcast mode address
 static const char *TAG = "sodusuhu";
 
 typedef struct gamit {
@@ -48,6 +48,7 @@ static void ponimpuun_wifi()
     ESP_ERROR_CHECK(esp_wifi_start());
 }
 
+// Initialize read pins
 static void ponimpuun_pomiri(void)
 {
     gpio_reset_pin(KOTOS_1);
